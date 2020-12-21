@@ -37,18 +37,15 @@ impl TetrisGame {
                 let index = rng.gen_range(0, self.width) as usize;
                 self.current_square = Some(index);
                 next[index] = Square::Occupied;
-                log!("New square at {}", index);
             }
             Some(index) if self.is_next_cell_free(index) => {
                 next[index as usize] = Square::Free;
                 let new_index = index + self.width as usize;
                 next[new_index] = Square::Occupied;
                 self.current_square = Some(new_index);
-                log!("Square goes down from {} to {}", index, new_index);
             }
-            Some(index) => {
+            _ => {
                 self.current_square = None;
-                log!("Square stops at {}", index);
             }
         }
         self.squares = next;
@@ -69,10 +66,6 @@ impl TetrisGame {
         }
     }
 
-    pub fn render(&self) -> String {
-        self.to_string()
-    }
-
     pub fn squares(&self) -> *const Square {
         self.squares.as_ptr()
     }
@@ -83,6 +76,51 @@ impl TetrisGame {
 
     pub fn height(&self) -> u32 {
         self.height
+    }
+
+    pub fn go_right(&mut self) {
+        match self.current_square {
+            Some(index) if index % self.width as usize != self.width as usize - 1 => {
+                let mut next = self.squares.clone();
+                let new_index = index + 1;
+                self.current_square = Some(new_index);
+                next[index] = Square::Free;
+                next[new_index] = Square::Occupied;
+                self.squares = next;
+            }
+            _ => {}
+        }
+    }
+
+    pub fn go_left(&mut self) {
+        match self.current_square {
+            Some(index) if index % self.width as usize > 0 => {
+                let mut next = self.squares.clone();
+                let new_index = index - 1;
+                self.current_square = Some(new_index);
+                next[index] = Square::Free;
+                next[new_index] = Square::Occupied;
+                self.squares = next;
+            }
+            _ => {}
+        }
+    }
+
+    pub fn go_bottom(&mut self) {
+        match self.current_square {
+            Some(index) if index > 0 => {
+                let mut next = self.squares.clone();
+                let mut new_index = index;
+                while self.is_next_cell_free(new_index) {
+                    new_index += self.width as usize;
+                }
+                self.current_square = Some(new_index);
+                next[index] = Square::Free;
+                next[new_index] = Square::Occupied;
+                self.squares = next;
+            }
+            _ => {}
+        }
     }
 }
 
