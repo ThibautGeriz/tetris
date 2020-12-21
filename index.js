@@ -88,12 +88,6 @@ function draw() {
   context.stroke();
 }
 
-window.requestAnimationFrame =
-  window.requestAnimationFrame ||
-  window.mozRequestAnimationFrame ||
-  window.webkitRequestAnimationFrame ||
-  window.msRequestAnimationFrame;
-
 window.requestAnimationFrame((timestamp) => {
   fps.render();
   draw();
@@ -110,6 +104,19 @@ setInterval(() => {
   game.tick();
 }, 300);
 
+
+
+document.addEventListener('keydown', ({ key }) => {
+  if (key === 'ArrowLeft' || key == 'a') {
+    game.go_left()
+  }
+  if (key === 'ArrowRight' || key == 'd') {
+    game.go_right()
+  }
+  if (key === 'ArrowDown' || key == 's') {
+    game.go_bottom()
+  }
+});
 function getIndex(row, column) {
   return row * columnCount + column;
 }
