@@ -27,13 +27,11 @@
       align-items: flex-start;
       justify-content: center;
       flex-wrap: nowrap;
-      padding-left: 20vw;
-      padding-right: 20vw;
     }
 
     #tetris-container {
-      flex-grow: 2;
       margin: 1rem;
+      padding: 0.3rem;
     }
 
     #tetris-sidebar {
@@ -43,6 +41,16 @@
     #fps-container {
       margin-top: 1rem;
     }
+
+    #controls {
+      margin-top: 1rem;
+
+    }
+
+    .control {
+      margin-top: 2px;
+    }
+
 
     #fps {
       white-space: pre;
@@ -63,6 +71,21 @@
     <div id="fps-container" class="nes-container with-title">
       <h3 class="title">FPS</h3>
       <div id="fps"></div>
+    </div>
+    <div id="controls" class="nes-container with-title">
+      <h3 class="title">Controls</h3>
+      <div class="item">
+        <div class="control">
+          <span class="nes-btn">A</span> <span class="nes-btn">←</span> Left
+        </div>
+        <div class="control">
+          <span class="nes-btn">S</span> <span class="nes-btn">↓</span> Bottom
+        </div>
+        <div class="control">
+          <span class="nes-btn">D</span> <span class="nes-btn">→</span> Right
+        </div>
+      </div>
+
     </div>
   </div>
   <script src="./bootstrap.js"></script>
