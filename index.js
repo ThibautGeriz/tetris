@@ -88,14 +88,16 @@ function draw() {
   context.stroke();
 }
 
-window.requestAnimationFrame((timestamp) => {
-  fps.render();
-  draw();
-});
+function setScore() {
+  const score = game.score();
+  const scoreTag = document.getElementById('tetris-score');
+  scoreTag.textContent = score;
+}
 
 const renderLoop = () => {
   fps.render();
   draw();
+  setScore();
   requestAnimationFrame(renderLoop);
 };
 renderLoop();
@@ -115,6 +117,7 @@ document.addEventListener('keydown', ({ key }) => {
     game.go_bottom();
   }
 });
+
 function getIndex(row, column) {
   return row * columnCount + column;
 }

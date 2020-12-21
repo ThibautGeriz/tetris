@@ -20,8 +20,9 @@ pub enum Square {
 
 #[wasm_bindgen]
 pub struct TetrisGame {
-    width: u32,
-    height: u32,
+    width: usize,
+    height: usize,
+    score: u32,
     current_square: Option<usize>,
     squares: Vec<Square>,
 }
@@ -34,13 +35,13 @@ impl TetrisGame {
         match self.current_square {
             None => {
                 let mut rng = rand::thread_rng();
-                let index = rng.gen_range(0, self.width) as usize;
+                let index = rng.gen_range(0, self.width);
                 self.current_square = Some(index);
                 next[index] = Square::Occupied;
             }
             Some(index) if self.is_next_cell_free(index) => {
-                next[index as usize] = Square::Free;
-                let new_index = index + self.width as usize;
+                next[index] = Square::Free;
+                let new_index = index + self.width;
                 next[new_index] = Square::Occupied;
                 self.current_square = Some(new_index);
             }
@@ -48,6 +49,14 @@ impl TetrisGame {
                 self.current_square = None;
             }
         }
+        if self.is_last_line_full() {
+            self.score += 100;
+            (0..self.width).for_each(|_| {
+                next.insert(0, Square::Free);
+                next.remove(next.len() - 1);
+            })
+        }
+
         self.squares = next;
     }
 
@@ -60,6 +69,7 @@ impl TetrisGame {
 
         TetrisGame {
             width,
+            score: 0,
             current_square: None,
             height,
             squares,
@@ -71,16 +81,20 @@ impl TetrisGame {
     }
 
     pub fn width(&self) -> u32 {
-        self.width
+        self.width as u32
     }
 
     pub fn height(&self) -> u32 {
-        self.height
+        self.height as u32
+    }
+
+    pub fn score(&self) -> u32 {
+        self.score
     }
 
     pub fn go_right(&mut self) {
         match self.current_square {
-            Some(index) if index % self.width as usize != self.width as usize - 1 => {
+            Some(index) if index % self.width != self.width - 1 => {
                 let mut next = self.squares.clone();
                 let new_index = index + 1;
                 self.current_square = Some(new_index);
@@ -94,7 +108,7 @@ impl TetrisGame {
 
     pub fn go_left(&mut self) {
         match self.current_square {
-            Some(index) if index % self.width as usize > 0 => {
+            Some(index) if index % self.width > 0 => {
                 let mut next = self.squares.clone();
                 let new_index = index - 1;
                 self.current_square = Some(new_index);
@@ -112,7 +126,7 @@ impl TetrisGame {
                 let mut next = self.squares.clone();
                 let mut new_index = index;
                 while self.is_next_cell_free(new_index) {
-                    new_index += self.width as usize;
+                    new_index += self.width;
                 }
                 self.current_square = Some(new_index);
                 next[index] = Square::Free;
@@ -126,7 +140,7 @@ impl TetrisGame {
 
 impl fmt::Display for TetrisGame {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        for line in self.squares.as_slice().chunks(self.width as usize) {
+        for line in self.squares.as_slice().chunks(self.width) {
             for &square in line {
                 let symbol = if square == Square::Free { ' ' } else { '◼' };
                 write!(f, "{}", symbol)?;
@@ -140,17 +154,24 @@ impl fmt::Display for TetrisGame {
 
 impl TetrisGame {
     #[allow(dead_code)]
-    fn get_index(&self, row: u32, column: u32) -> usize {
-        (row * self.width + column) as usize
+    fn get_index(&self, row: usize, column: usize) -> usize {
+        row * self.width + column
     }
 
     fn is_next_cell_free(&self, index: usize) -> bool {
-        let max_index_to_go_down = self.width as usize * (self.height as usize - 1);
+        let max_index_to_go_down = self.width * (self.height - 1);
         if index >= max_index_to_go_down {
             return false;
         }
-        let new_index = index + self.width as usize;
+        let new_index = index + self.width;
         self.squares[new_index] == Square::Free
+    }
+
+    fn is_last_line_full(&self) -> bool {
+        let start_index = self.width * (self.height - 1);
+        self.squares[start_index..]
+            .iter()
+            .all(|&x| x == Square::Occupied)
     }
 }
 
