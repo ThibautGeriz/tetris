@@ -1,8 +1,16 @@
-import { TetrisGame, Square } from './pkg';
+import { TetrisGame, Color } from './pkg';
 import { memory } from './pkg/wasm_tetris_bg';
 
-const FREE_COLOR = '#FFFFFF';
-const OCCUPIED_COLOR = '#000000';
+const colors = {
+  [Color.None]: '#FFFFFF',
+  [Color.Cyan]: '#00FFFF',
+  [Color.Yellow]: '#FFFF00',
+  [Color.Purple]: '#800080',
+  [Color.Green]: '#008000',
+  [Color.Red]: '#FF0000',
+  [Color.Blue]: '#0000FF',
+  [Color.Orange]: '#FFA500',
+};
 
 // // Construct the universe, and get its width and height.
 const game = TetrisGame.new();
@@ -75,7 +83,7 @@ function draw() {
   for (let row = 0; row < rowCount; row++) {
     for (let col = 0; col < columnCount; col++) {
       const idx = getIndex(row, col);
-      context.fillStyle = squares[idx] === Square.Free ? FREE_COLOR : OCCUPIED_COLOR;
+      context.fillStyle = colors[squares[idx]];
       context.fillRect(
         col * (squareSize + 1) + 1,
         row * (squareSize + 1) + 1,
