@@ -10,6 +10,9 @@ use wasm_bindgen::prelude::*;
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
+pub const WIDTH: usize = 10;
+pub const HEIGHT: usize = 20;
+
 #[wasm_bindgen]
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -23,7 +26,7 @@ pub struct TetrisGame {
     width: usize,
     height: usize,
     score: u32,
-    current_square: Option<usize>,
+    pub current_square: Option<usize>,
     squares: Vec<Square>,
 }
 
@@ -35,7 +38,7 @@ impl TetrisGame {
         match self.current_square {
             None => {
                 let mut rng = rand::thread_rng();
-                let index = rng.gen_range(0, self.width);
+                let index = rng.gen_range(1, self.width - 1);
                 self.current_square = Some(index);
                 next[index] = Square::Occupied;
             }
@@ -62,16 +65,13 @@ impl TetrisGame {
 
     pub fn new() -> TetrisGame {
         utils::set_panic_hook();
-        let width = 10;
-        let height = 20;
-
-        let squares = (0..width * height).map(|_i| Square::Free).collect();
+        let squares = (0..WIDTH * HEIGHT).map(|_i| Square::Free).collect();
 
         TetrisGame {
-            width,
+            width: WIDTH,
             score: 0,
             current_square: None,
-            height,
+            height: HEIGHT,
             squares,
         }
     }
@@ -172,6 +172,10 @@ impl TetrisGame {
         self.squares[start_index..]
             .iter()
             .all(|&x| x == Square::Occupied)
+    }
+
+    pub fn get_squares(&self) -> &Vec<Square> {
+        &self.squares
     }
 }
 
