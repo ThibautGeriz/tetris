@@ -7,9 +7,9 @@ pub fn get_random_tetromino() -> Box<dyn Tetromino> {
 
 pub trait Tetromino {
     fn get_color(&self) -> Color;
-    fn get_index(&self) -> usize;
-    fn go_down(&mut self) -> usize;
-    fn go_right(&mut self) -> usize;
-    fn go_left(&mut self) -> usize;
-    fn go_down_by(&mut self, length: usize) -> usize;
+    fn get_squares(&self) -> [usize; 4];
+    fn go_down(&mut self) -> [usize; 4];
+    fn go_right(&mut self) -> [usize; 4];
+    fn go_left(&mut self) -> [usize; 4];
+    fn go_down_by(&mut self, length: usize) -> [usize; 4];
 }

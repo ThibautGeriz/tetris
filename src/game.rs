@@ -41,13 +41,13 @@ impl TetrisGame {
         match &self.current_tetromino {
             None => {
                 let tetromino: Box<dyn Tetromino> = get_random_tetromino();
-                next[tetromino.get_index()] = tetromino.get_color();
+                next[tetromino.get_squares()[0]] = tetromino.get_color();
                 self.current_tetromino = Some(tetromino);
             }
-            Some(tetromino) if self.is_next_cell_free(tetromino.get_index()) => {
-                next[tetromino.get_index()] = Color::None;
+            Some(tetromino) if self.is_next_cell_free(tetromino.get_squares()[0]) => {
+                next[tetromino.get_squares()[0]] = Color::None;
                 let color = tetromino.get_color();
-                let new_index = self.current_tetromino.as_mut().unwrap().go_down();
+                let new_index = self.current_tetromino.as_mut().unwrap().go_down()[0];
                 next[new_index] = color;
             }
             _ => {
@@ -96,11 +96,11 @@ impl TetrisGame {
 
     pub fn go_right(&mut self) {
         match &self.current_tetromino {
-            Some(tetromino) if tetromino.get_index() % COLUMN_COUNT != COLUMN_COUNT - 1 => {
+            Some(tetromino) if tetromino.get_squares()[0] % COLUMN_COUNT != COLUMN_COUNT - 1 => {
                 let mut next = self.squares.clone();
-                next[tetromino.get_index()] = Color::None;
+                next[tetromino.get_squares()[0]] = Color::None;
                 let color = tetromino.get_color();
-                let new_index = self.current_tetromino.as_mut().unwrap().go_right();
+                let new_index = self.current_tetromino.as_mut().unwrap().go_right()[0];
                 next[new_index] = color;
                 self.squares = next;
             }
@@ -110,11 +110,11 @@ impl TetrisGame {
 
     pub fn go_left(&mut self) {
         match &self.current_tetromino {
-            Some(tetromino) if tetromino.get_index() % COLUMN_COUNT > 0 => {
+            Some(tetromino) if tetromino.get_squares()[0] % COLUMN_COUNT > 0 => {
                 let mut next = self.squares.clone();
-                next[tetromino.get_index()] = Color::None;
+                next[tetromino.get_squares()[0]] = Color::None;
                 let color = tetromino.get_color();
-                let new_index = self.current_tetromino.as_mut().unwrap().go_left();
+                let new_index = self.current_tetromino.as_mut().unwrap().go_left()[0];
                 next[new_index] = color;
                 self.squares = next;
             }
@@ -124,12 +124,12 @@ impl TetrisGame {
 
     pub fn go_bottom(&mut self) {
         match &self.current_tetromino {
-            Some(tetromino) if tetromino.get_index() > 0 => {
+            Some(tetromino) if tetromino.get_squares()[0] > 0 => {
                 let mut next = self.squares.clone();
-                let mut new_index = tetromino.get_index();
+                let mut new_index = tetromino.get_squares()[0];
                 let mut rows_to_go_down = 0;
                 let color = tetromino.get_color();
-                next[tetromino.get_index()] = Color::None;
+                next[tetromino.get_squares()[0]] = Color::None;
                 while self.is_next_cell_free(new_index) {
                     new_index += COLUMN_COUNT;
                     rows_to_go_down += 1;
@@ -138,7 +138,7 @@ impl TetrisGame {
                     .current_tetromino
                     .as_mut()
                     .unwrap()
-                    .go_down_by(rows_to_go_down);
+                    .go_down_by(rows_to_go_down)[0];
                 next[new_index] = color;
                 self.squares = next;
             }

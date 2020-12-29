@@ -4,14 +4,19 @@ use crate::game::COLUMN_COUNT;
 use rand::{thread_rng, Rng};
 
 pub struct O {
-    pub index: usize,
+    squares: [usize; 4]
 }
 
 impl O {
     pub fn new() -> Self {
         let mut rng = thread_rng();
-        let index = rng.gen_range(1, COLUMN_COUNT - 1);
-        O { index }
+        let index = rng.gen_range(2, COLUMN_COUNT - 2);
+        let mut squares = [0; 4];
+        squares[0] = index;
+        squares[1] = index + 1;
+        squares[2] = index + COLUMN_COUNT;
+        squares[3] = index + 1 + COLUMN_COUNT;
+        O { squares  }
     }
 }
 
@@ -20,28 +25,28 @@ impl Tetromino for O {
         Color::Yellow
     }
 
-    fn get_index(&self) -> usize {
-        self.index
+    fn get_squares(&self) -> [usize; 4] {
+        self.squares
     }
 
-    fn go_down(&mut self) -> usize {
-        self.index += COLUMN_COUNT;
-        self.index
+    fn go_down(&mut self) -> [usize; 4] {
+        // self.index += COLUMN_COUNT;
+        self.squares
     }
 
-    fn go_right(&mut self) -> usize {
-        self.index += 1;
-        self.index
+    fn go_right(&mut self) -> [usize; 4] {
+        // self.index += 1;
+        self.squares
     }
 
-    fn go_left(&mut self) -> usize {
-        self.index -= 1;
-        self.index
+    fn go_left(&mut self) -> [usize; 4] {
+        // self.index -= 1;
+        self.squares
     }
 
-    fn go_down_by(&mut self, length: usize) -> usize {
-        self.index += COLUMN_COUNT * length;
-        self.index
+    fn go_down_by(&mut self, length: usize) -> [usize; 4] {
+        // self.index += COLUMN_COUNT * length;
+        self.squares
     }
 }
 
