@@ -67,6 +67,12 @@
 /******/ 					"__wbindgen_object_drop_ref": function(p0i32) {
 /******/ 						return installedModules["./pkg/wasm_tetris_bg.js"].exports["__wbindgen_object_drop_ref"](p0i32);
 /******/ 					},
+/******/ 					"__wbg_getRandomValues_3ac1b33c90b52596": function(p0i32,p1i32,p2i32) {
+/******/ 						return installedModules["./pkg/wasm_tetris_bg.js"].exports["__wbg_getRandomValues_3ac1b33c90b52596"](p0i32,p1i32,p2i32);
+/******/ 					},
+/******/ 					"__wbg_randomFillSync_6f956029658662ec": function(p0i32,p1i32,p2i32) {
+/******/ 						return installedModules["./pkg/wasm_tetris_bg.js"].exports["__wbg_randomFillSync_6f956029658662ec"](p0i32,p1i32,p2i32);
+/******/ 					},
 /******/ 					"__wbg_self_1c83eb4471d9eb9b": function() {
 /******/ 						return installedModules["./pkg/wasm_tetris_bg.js"].exports["__wbg_self_1c83eb4471d9eb9b"]();
 /******/ 					},
@@ -84,12 +90,6 @@
 /******/ 					},
 /******/ 					"__wbg_getRandomValues_05a60bf171bfc2be": function(p0i32) {
 /******/ 						return installedModules["./pkg/wasm_tetris_bg.js"].exports["__wbg_getRandomValues_05a60bf171bfc2be"](p0i32);
-/******/ 					},
-/******/ 					"__wbg_getRandomValues_3ac1b33c90b52596": function(p0i32,p1i32,p2i32) {
-/******/ 						return installedModules["./pkg/wasm_tetris_bg.js"].exports["__wbg_getRandomValues_3ac1b33c90b52596"](p0i32,p1i32,p2i32);
-/******/ 					},
-/******/ 					"__wbg_randomFillSync_6f956029658662ec": function(p0i32,p1i32,p2i32) {
-/******/ 						return installedModules["./pkg/wasm_tetris_bg.js"].exports["__wbg_randomFillSync_6f956029658662ec"](p0i32,p1i32,p2i32);
 /******/ 					},
 /******/ 					"__wbg_static_accessor_MODULE_abf5ae284bffdf45": function() {
 /******/ 						return installedModules["./pkg/wasm_tetris_bg.js"].exports["__wbg_static_accessor_MODULE_abf5ae284bffdf45"]();
@@ -198,7 +198,7 @@
 /******/ 				promises.push(installedWasmModuleData);
 /******/ 			else {
 /******/ 				var importObject = wasmImportObjects[wasmModuleId]();
-/******/ 				var req = fetch(__webpack_require__.p + "" + {"./pkg/wasm_tetris_bg.wasm":"afd636b57b944dbc2e35"}[wasmModuleId] + ".module.wasm");
+/******/ 				var req = fetch(__webpack_require__.p + "" + {"./pkg/wasm_tetris_bg.wasm":"45c519986194fec8b8d5"}[wasmModuleId] + ".module.wasm");
 /******/ 				var promise;
 /******/ 				if(importObject instanceof Promise && typeof WebAssembly.compileStreaming === 'function') {
 /******/ 					promise = Promise.all([WebAssembly.compileStreaming(req), importObject]).then(function(items) {
