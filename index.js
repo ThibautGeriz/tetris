@@ -14,8 +14,8 @@ const colors = {
 
 // // Construct the universe, and get its width and height.
 const game = TetrisGame.new();
-const columnCount = game.width();
-const rowCount = game.height();
+const columnCount = game.column_count();
+const rowCount = game.row_count();
 let squareSize = getSquareSize();
 const canvas = document.getElementById('tetris-playground');
 const context = canvas.getContext('2d');
