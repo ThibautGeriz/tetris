@@ -15,9 +15,9 @@ impl Playground {
         let squares = (0..COLUMN_COUNT * ROW_COUNT)
             .map(|_i| Color::None)
             .collect();
-
         Playground { squares }
     }
+
     pub fn is_cell_bellow_free(&self, index: usize) -> bool {
         let max_index_to_go_down = COLUMN_COUNT * (ROW_COUNT - 1);
         if index >= max_index_to_go_down {

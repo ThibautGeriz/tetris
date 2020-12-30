@@ -1,7 +1,7 @@
-use super::{Tetromino, TetrominoPrivate, SQUARE_COUNT};
+use super::{Tetromino, TetrominoCommon, SQUARE_COUNT};
 use crate::color::Color;
 use crate::playground::Playground;
-use crate::playground::COLUMN_COUNT;
+use crate::playground::{COLUMN_COUNT, ROW_COUNT};
 #[allow(unused_imports)]
 use rand::{thread_rng, Error, Rng, RngCore};
 
@@ -12,7 +12,12 @@ pub struct O {
 }
 
 impl O {
-    pub fn new(rng: &mut Box<dyn RngCore>, playground: &mut Playground) -> Self {
+    pub fn new(playground: &mut Playground) -> Self {
+        let mut rng = Box::new(thread_rng()) as Box<dyn RngCore>;
+        O::create(&mut rng, playground)
+    }
+
+    fn create(rng: &mut Box<dyn RngCore>, playground: &mut Playground) -> Self {
         let index = rng.gen_range(2, COLUMN_COUNT - 2);
         let mut squares = [0; SQUARE_COUNT];
         squares[0] = index;
@@ -25,8 +30,20 @@ impl O {
         playground.set_square(index + 1 + COLUMN_COUNT, COLOR);
         O { squares }
     }
+
+    fn can_go_down(&self, playground: &Playground) -> bool {
+        (0..SQUARE_COUNT).fold(true, |acc, i| {
+            if !acc || self.get_square(i) >= COLUMN_COUNT * (ROW_COUNT - 1) {
+                return false;
+            }
+            let is_cell_bellow_free = playground.is_cell_bellow_free(self.get_square(i));
+            let is_cell_bellow_used_by_this_tetromino =
+                self.is_cell_used_by_this_tetromino(i, COLUMN_COUNT as i16);
+            is_cell_bellow_free || is_cell_bellow_used_by_this_tetromino
+        })
+    }
 }
-impl TetrominoPrivate for O {
+impl TetrominoCommon for O {
     fn set_square(&mut self, index: usize, value: usize) {
         self.squares[index] = value;
     }
@@ -41,26 +58,12 @@ impl TetrominoPrivate for O {
 }
 
 impl Tetromino for O {
-    fn get_color(&self) -> Color {
-        COLOR
-    }
-
     fn go_down(&mut self, playground: &mut Playground) -> bool {
-        let can_go_down = (0..SQUARE_COUNT).fold(true, |acc, i| {
-            let is_cell_bellow_free = playground.is_cell_bellow_free(self.get_square(i));
-            let is_cell_bellow_used_by_this_tetromino =
-                self.is_cell_used_by_this_tetromino(i, COLUMN_COUNT as i8);
-            acc && (is_cell_bellow_free || is_cell_bellow_used_by_this_tetromino)
-        });
-        if !can_go_down {
+        if !self.can_go_down(playground) {
             return false;
         }
-        self.set_tetromino_on_new_offset(playground, COLUMN_COUNT as i8);
+        self.set_tetromino_on_new_offset(playground, COLUMN_COUNT as i16);
         true
-    }
-
-    fn get_squares(&self) -> [usize; SQUARE_COUNT] {
-        self.squares
     }
 
     fn go_right(&mut self, playground: &mut Playground) -> bool {
@@ -92,16 +95,20 @@ impl Tetromino for O {
         true
     }
 
-    fn go_down_by(&mut self, length: usize) -> [usize; SQUARE_COUNT] {
-        // self.index += COLUMN_COUNT * length;
-        self.squares
+    fn go_bottom(&mut self, playground: &mut Playground) -> bool {
+        let mut have_moved = false;
+        // TODO: optimise this
+        while self.can_go_down(playground) {
+            have_moved = true;
+            self.set_tetromino_on_new_offset(playground, COLUMN_COUNT as i16);
+        }
+        have_moved
     }
 }
 
 impl Default for O {
     fn default() -> Self {
-        let mut rng = Box::new(thread_rng()) as Box<dyn RngCore>;
-        Self::new(&mut rng, &mut Playground::default())
+        Self::new(&mut Playground::default())
     }
 }
 
@@ -139,7 +146,7 @@ mod tests {
         let mut playground = Playground::new();
 
         // when
-        let tetromino = O::new(&mut fake_random, &mut playground);
+        let tetromino = O::create(&mut fake_random, &mut playground);
 
         // then
         let mut expected_squares = [0; 4];
@@ -159,7 +166,7 @@ mod tests {
         // given
         let mut fake_random = get_fake_rand(2);
         let mut playground = Playground::new();
-        let mut tetromino = O::new(&mut fake_random, &mut playground);
+        let mut tetromino = O::create(&mut fake_random, &mut playground);
 
         // when
         let went_down = tetromino.go_down(&mut playground);
@@ -185,7 +192,7 @@ mod tests {
         // given
         let mut fake_random = get_fake_rand(2);
         let mut playground = Playground::new();
-        let mut tetromino = O::new(&mut fake_random, &mut playground);
+        let mut tetromino = O::create(&mut fake_random, &mut playground);
 
         // when
         let mut went_down = tetromino.go_down(&mut playground);
@@ -216,7 +223,7 @@ mod tests {
         let mut fake_random = get_fake_rand(2);
         let mut playground = Playground::new();
         playground.set_square(22, Color::Cyan);
-        let mut tetromino = O::new(&mut fake_random, &mut playground);
+        let mut tetromino = O::create(&mut fake_random, &mut playground);
 
         // when
         let went_down = tetromino.go_down(&mut playground);
@@ -242,7 +249,7 @@ mod tests {
         // given
         let mut fake_random = get_fake_rand(2);
         let mut playground = Playground::new();
-        let mut tetromino = O::new(&mut fake_random, &mut playground);
+        let mut tetromino = O::create(&mut fake_random, &mut playground);
 
         // when
         let went_left = tetromino.go_left(&mut playground);
@@ -268,7 +275,7 @@ mod tests {
         // given
         let mut fake_random = get_fake_rand(2);
         let mut playground = Playground::new();
-        let mut tetromino = O::new(&mut fake_random, &mut playground);
+        let mut tetromino = O::create(&mut fake_random, &mut playground);
 
         // when
         let mut went_left = tetromino.go_left(&mut playground);
@@ -299,7 +306,7 @@ mod tests {
         let mut fake_random = get_fake_rand(2);
         let mut playground = Playground::new();
         playground.set_square(1, Color::Cyan);
-        let mut tetromino = O::new(&mut fake_random, &mut playground);
+        let mut tetromino = O::create(&mut fake_random, &mut playground);
 
         // when
         let went_left = tetromino.go_left(&mut playground);
@@ -325,7 +332,7 @@ mod tests {
         // given
         let mut fake_random = get_fake_rand(2);
         let mut playground = Playground::new();
-        let mut tetromino = O::new(&mut fake_random, &mut playground);
+        let mut tetromino = O::create(&mut fake_random, &mut playground);
 
         // when
         let went_right = tetromino.go_right(&mut playground);
@@ -351,7 +358,7 @@ mod tests {
         // given
         let mut fake_random = get_fake_rand(2);
         let mut playground = Playground::new();
-        let mut tetromino = O::new(&mut fake_random, &mut playground);
+        let mut tetromino = O::create(&mut fake_random, &mut playground);
 
         // when
         let mut went_right = tetromino.go_right(&mut playground);
@@ -382,7 +389,7 @@ mod tests {
         let mut fake_random = get_fake_rand(2);
         let mut playground = Playground::new();
         playground.set_square(4, Color::Cyan);
-        let mut tetromino = O::new(&mut fake_random, &mut playground);
+        let mut tetromino = O::create(&mut fake_random, &mut playground);
 
         // when
         let went_right = tetromino.go_right(&mut playground);
@@ -401,5 +408,62 @@ mod tests {
         assert_eq!(playground.get_squares()[13], Color::Yellow);
         assert_eq!(playground.get_squares()[4], Color::Cyan);
         assert_eq!(playground.get_squares()[14], Color::None);
+    }
+
+    #[test]
+    fn go_bottom_empty_playground() {
+        // given
+        let mut fake_random = get_fake_rand(2);
+        let mut playground = Playground::new();
+        let mut tetromino = O::create(&mut fake_random, &mut playground);
+
+        // when
+        let went_down = tetromino.go_bottom(&mut playground);
+
+        // then
+        assert_eq!(went_down, true);
+        let mut expected_squares = [0; 4];
+        expected_squares[0] = 182;
+        expected_squares[1] = 183;
+        expected_squares[2] = 192;
+        expected_squares[3] = 193;
+        assert_eq!(tetromino.squares, expected_squares);
+        assert_eq!(playground.get_squares()[2], Color::None);
+        assert_eq!(playground.get_squares()[3], Color::None);
+        assert_eq!(playground.get_squares()[12], Color::None);
+        assert_eq!(playground.get_squares()[13], Color::None);
+        assert_eq!(playground.get_squares()[182], Color::Yellow);
+        assert_eq!(playground.get_squares()[183], Color::Yellow);
+        assert_eq!(playground.get_squares()[192], Color::Yellow);
+        assert_eq!(playground.get_squares()[193], Color::Yellow);
+    }
+
+    #[test]
+    fn go_bottom_blocked_by_square() {
+        // given
+        let mut fake_random = get_fake_rand(2);
+        let mut playground = Playground::new();
+        playground.set_square(42, Color::Cyan);
+        let mut tetromino = O::create(&mut fake_random, &mut playground);
+
+        // when
+        let went_down = tetromino.go_bottom(&mut playground);
+
+        // then
+        assert_eq!(went_down, true);
+        let mut expected_squares = [0; 4];
+        expected_squares[0] = 22;
+        expected_squares[1] = 23;
+        expected_squares[2] = 32;
+        expected_squares[3] = 33;
+        assert_eq!(tetromino.squares, expected_squares);
+        assert_eq!(playground.get_squares()[2], Color::None);
+        assert_eq!(playground.get_squares()[3], Color::None);
+        assert_eq!(playground.get_squares()[22], Color::Yellow);
+        assert_eq!(playground.get_squares()[23], Color::Yellow);
+        assert_eq!(playground.get_squares()[32], Color::Yellow);
+        assert_eq!(playground.get_squares()[33], Color::Yellow);
+        assert_eq!(playground.get_squares()[42], Color::Cyan);
+        assert_eq!(playground.get_squares()[43], Color::None);
     }
 }

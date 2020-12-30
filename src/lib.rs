@@ -1,5 +1,5 @@
-mod color;
+pub mod color;
 pub mod game;
-mod playground;
-mod tetrominos;
+pub mod playground;
+pub mod tetrominos;
 mod utils;

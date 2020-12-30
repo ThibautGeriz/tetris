@@ -23,21 +23,15 @@ pub struct TetrisGame {
 impl TetrisGame {
     pub fn tick(&mut self) {
         let mut next = self.playground.clone();
-        match &self.current_tetromino {
+        match &mut self.current_tetromino {
             None => {
-                let tetromino: Box<dyn Tetromino> = get_random_tetromino();
-                next.set_square(tetromino.get_squares()[0], tetromino.get_color());
+                let tetromino: Box<dyn Tetromino> = get_random_tetromino(&mut next);
                 self.current_tetromino = Some(tetromino);
             }
-            Some(tetromino)
-                if self
-                    .playground
-                    .is_cell_bellow_free(tetromino.get_squares()[0]) =>
-            {
-                self.current_tetromino.as_mut().unwrap().go_down(&mut next);
-            }
-            _ => {
-                self.current_tetromino = None;
+            Some(tetromino) => {
+                if !tetromino.go_down(&mut next) {
+                    self.current_tetromino = None;
+                }
             }
         }
         if self.playground.is_last_line_full() {
@@ -94,26 +88,10 @@ impl TetrisGame {
     }
 
     pub fn go_bottom(&mut self) {
-        match &self.current_tetromino {
-            Some(tetromino) if tetromino.get_squares()[0] > 0 => {
-                let mut next = self.playground.clone();
-                let mut new_index = tetromino.get_squares()[0];
-                let mut rows_to_go_down = 0;
-                let color = tetromino.get_color();
-                next.set_square(tetromino.get_squares()[0], Color::None);
-                while self.playground.is_cell_bellow_free(new_index) {
-                    new_index += COLUMN_COUNT;
-                    rows_to_go_down += 1;
-                }
-                let new_index = self
-                    .current_tetromino
-                    .as_mut()
-                    .unwrap()
-                    .go_down_by(rows_to_go_down)[0];
-                next.set_square(new_index, color);
-                self.playground = next;
-            }
-            _ => {}
+        if let Some(tetromino) = &mut self.current_tetromino {
+            let mut next = self.playground.clone();
+            tetromino.go_bottom(&mut next);
+            self.playground = next;
         }
     }
 }
@@ -121,6 +99,10 @@ impl TetrisGame {
 impl TetrisGame {
     pub fn get_tetromino(&self) -> &Option<Box<dyn Tetromino>> {
         &self.current_tetromino
+    }
+
+    pub fn get_playground(&self) -> &Playground {
+        &self.playground
     }
 }
 
