@@ -1,7 +1,7 @@
 use super::{Tetromino, TetrominoCommon, SQUARE_COUNT};
 use crate::color::Color;
 use crate::playground::Playground;
-use crate::playground::{COLUMN_COUNT, ROW_COUNT};
+use crate::playground::COLUMN_COUNT;
 #[allow(unused_imports)]
 use rand::{thread_rng, Error, Rng, RngCore};
 
@@ -24,23 +24,10 @@ impl O {
         squares[1] = index + 1;
         squares[2] = index + COLUMN_COUNT;
         squares[3] = index + 1 + COLUMN_COUNT;
-        playground.set_square(index, COLOR);
-        playground.set_square(index + 1, COLOR);
-        playground.set_square(index + COLUMN_COUNT, COLOR);
-        playground.set_square(index + 1 + COLUMN_COUNT, COLOR);
+        (0..SQUARE_COUNT).for_each(|i| {
+            playground.set_square(squares[i], COLOR);
+        });
         O { squares }
-    }
-
-    fn can_go_down(&self, playground: &Playground) -> bool {
-        (0..SQUARE_COUNT).fold(true, |acc, i| {
-            if !acc || self.get_square(i) >= COLUMN_COUNT * (ROW_COUNT - 1) {
-                return false;
-            }
-            let is_cell_bellow_free = playground.is_cell_bellow_free(self.get_square(i));
-            let is_cell_bellow_used_by_this_tetromino =
-                self.is_cell_used_by_this_tetromino(i, COLUMN_COUNT as i16);
-            is_cell_bellow_free || is_cell_bellow_used_by_this_tetromino
-        })
     }
 }
 impl TetrominoCommon for O {
@@ -59,50 +46,19 @@ impl TetrominoCommon for O {
 
 impl Tetromino for O {
     fn go_down(&mut self, playground: &mut Playground) -> bool {
-        if !self.can_go_down(playground) {
-            return false;
-        }
-        self.set_tetromino_on_new_offset(playground, COLUMN_COUNT as i16);
-        true
+        <O as TetrominoCommon>::go_down(self, playground)
     }
 
     fn go_right(&mut self, playground: &mut Playground) -> bool {
-        let can_go_right = (0..SQUARE_COUNT).fold(true, |acc, i| {
-            let is_cell_on_the_right_free =
-                playground.is_cell_on_the_right_free(self.get_square(i));
-            let is_cell_on_the_right_used_by_this_tetromino =
-                self.is_cell_used_by_this_tetromino(i, 1);
-            acc && (is_cell_on_the_right_free || is_cell_on_the_right_used_by_this_tetromino)
-        });
-        if !can_go_right {
-            return false;
-        }
-        self.set_tetromino_on_new_offset(playground, 1);
-        true
+        <O as TetrominoCommon>::go_right(self, playground)
     }
 
     fn go_left(&mut self, playground: &mut Playground) -> bool {
-        let can_go_left = (0..SQUARE_COUNT).fold(true, |acc, i| {
-            let is_cell_on_the_left_free = playground.is_cell_on_the_left_free(self.get_square(i));
-            let is_cell_on_the_left_used_by_this_tetromino =
-                self.is_cell_used_by_this_tetromino(i, -1);
-            acc && (is_cell_on_the_left_free || is_cell_on_the_left_used_by_this_tetromino)
-        });
-        if !can_go_left {
-            return false;
-        }
-        self.set_tetromino_on_new_offset(playground, -1);
-        true
+        <O as TetrominoCommon>::go_left(self, playground)
     }
 
     fn go_bottom(&mut self, playground: &mut Playground) -> bool {
-        let mut have_moved = false;
-        // TODO: optimise this
-        while self.can_go_down(playground) {
-            have_moved = true;
-            self.set_tetromino_on_new_offset(playground, COLUMN_COUNT as i16);
-        }
-        have_moved
+        <O as TetrominoCommon>::go_bottom(self, playground)
     }
 }
 
@@ -169,7 +125,7 @@ mod tests {
         let mut tetromino = O::create(&mut fake_random, &mut playground);
 
         // when
-        let went_down = tetromino.go_down(&mut playground);
+        let went_down = <O as Tetromino>::go_down(&mut tetromino, &mut playground);
 
         // then
         assert_eq!(went_down, true);
@@ -195,9 +151,9 @@ mod tests {
         let mut tetromino = O::create(&mut fake_random, &mut playground);
 
         // when
-        let mut went_down = tetromino.go_down(&mut playground);
+        let mut went_down = <O as Tetromino>::go_down(&mut tetromino, &mut playground);
         assert_eq!(went_down, true);
-        went_down = tetromino.go_down(&mut playground);
+        went_down = <O as Tetromino>::go_down(&mut tetromino, &mut playground);
         assert_eq!(went_down, true);
 
         // then
@@ -226,7 +182,7 @@ mod tests {
         let mut tetromino = O::create(&mut fake_random, &mut playground);
 
         // when
-        let went_down = tetromino.go_down(&mut playground);
+        let went_down = <O as Tetromino>::go_down(&mut tetromino, &mut playground);
 
         // then
         assert_eq!(went_down, false);
@@ -252,7 +208,7 @@ mod tests {
         let mut tetromino = O::create(&mut fake_random, &mut playground);
 
         // when
-        let went_left = tetromino.go_left(&mut playground);
+        let went_left = <O as Tetromino>::go_left(&mut tetromino, &mut playground);
 
         // then
         assert_eq!(went_left, true);
@@ -278,9 +234,9 @@ mod tests {
         let mut tetromino = O::create(&mut fake_random, &mut playground);
 
         // when
-        let mut went_left = tetromino.go_left(&mut playground);
+        let mut went_left = <O as Tetromino>::go_left(&mut tetromino, &mut playground);
         assert_eq!(went_left, true);
-        went_left = tetromino.go_left(&mut playground);
+        went_left = <O as Tetromino>::go_left(&mut tetromino, &mut playground);
         assert_eq!(went_left, true);
 
         // then
@@ -309,7 +265,7 @@ mod tests {
         let mut tetromino = O::create(&mut fake_random, &mut playground);
 
         // when
-        let went_left = tetromino.go_left(&mut playground);
+        let went_left = <O as Tetromino>::go_left(&mut tetromino, &mut playground);
 
         // then
         assert_eq!(went_left, false);
@@ -335,7 +291,7 @@ mod tests {
         let mut tetromino = O::create(&mut fake_random, &mut playground);
 
         // when
-        let went_right = tetromino.go_right(&mut playground);
+        let went_right = <O as Tetromino>::go_right(&mut tetromino, &mut playground);
 
         // then
         assert_eq!(went_right, true);
@@ -361,9 +317,9 @@ mod tests {
         let mut tetromino = O::create(&mut fake_random, &mut playground);
 
         // when
-        let mut went_right = tetromino.go_right(&mut playground);
+        let mut went_right = <O as Tetromino>::go_right(&mut tetromino, &mut playground);
         assert_eq!(went_right, true);
-        went_right = tetromino.go_right(&mut playground);
+        went_right = <O as Tetromino>::go_right(&mut tetromino, &mut playground);
         assert_eq!(went_right, true);
 
         // then
@@ -392,7 +348,7 @@ mod tests {
         let mut tetromino = O::create(&mut fake_random, &mut playground);
 
         // when
-        let went_right = tetromino.go_right(&mut playground);
+        let went_right = <O as Tetromino>::go_right(&mut tetromino, &mut playground);
 
         // then
         assert_eq!(went_right, false);
@@ -418,7 +374,7 @@ mod tests {
         let mut tetromino = O::create(&mut fake_random, &mut playground);
 
         // when
-        let went_down = tetromino.go_bottom(&mut playground);
+        let went_down = <O as Tetromino>::go_bottom(&mut tetromino, &mut playground);
 
         // then
         assert_eq!(went_down, true);
@@ -447,7 +403,7 @@ mod tests {
         let mut tetromino = O::create(&mut fake_random, &mut playground);
 
         // when
-        let went_down = tetromino.go_bottom(&mut playground);
+        let went_down = <O as Tetromino>::go_bottom(&mut tetromino, &mut playground);
 
         // then
         assert_eq!(went_down, true);
