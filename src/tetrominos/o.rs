@@ -24,10 +24,9 @@ impl O {
         squares[1] = index + 1;
         squares[2] = index + COLUMN_COUNT;
         squares[3] = index + 1 + COLUMN_COUNT;
-        playground.set_square(index, COLOR);
-        playground.set_square(index + 1, COLOR);
-        playground.set_square(index + COLUMN_COUNT, COLOR);
-        playground.set_square(index + 1 + COLUMN_COUNT, COLOR);
+        (0..SQUARE_COUNT).for_each(|i| {
+            playground.set_square(squares[i], COLOR);
+        });
         O { squares }
     }
 }
