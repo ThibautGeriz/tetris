@@ -1,5 +1,6 @@
 mod i;
 mod j;
+mod l;
 mod o;
 use crate::color::Color;
 use crate::playground::Playground;
@@ -9,10 +10,11 @@ use rand::{thread_rng, Rng};
 const SQUARE_COUNT: usize = 4;
 
 pub fn get_random_tetromino(playground: &mut Playground) -> Box<dyn Tetromino> {
-    match thread_rng().gen_range(0, 3) {
+    match thread_rng().gen_range(0, 4) {
         0 => Box::new(o::O::new(playground)),
         1 => Box::new(i::I::new(playground)),
-        _ => Box::new(j::J::new(playground)),
+        2 => Box::new(j::J::new(playground)),
+        _ => Box::new(l::L::new(playground)),
     }
 }
 
