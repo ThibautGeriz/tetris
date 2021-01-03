@@ -1,3 +1,4 @@
+use std::fmt;
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
@@ -12,4 +13,10 @@ pub enum Color {
     Red = 5,    // Z
     Blue = 6,   // J
     Orange = 7, // L
+}
+
+impl fmt::Display for Color {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}", self)
+    }
 }

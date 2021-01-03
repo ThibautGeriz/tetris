@@ -14,6 +14,7 @@ static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 #[wasm_bindgen]
 pub struct TetrisGame {
     score: u32,
+    level: u32,
     current_tetromino: Option<Box<dyn Tetromino>>,
     playground: Playground,
 }
@@ -34,15 +35,19 @@ impl TetrisGame {
                 }
             }
         }
-        if self.playground.is_last_line_full() {
-            self.score += 100;
-            (0..COLUMN_COUNT).for_each(|_| {
-                // next.insert(0, Color::None);
-                // next.remove(next.len() - 1);
-            })
-        }
-
+        let line_removed_count = next.remove_full_lines_at_the_end();
+        self.set_score(line_removed_count);
         self.playground = next;
+    }
+
+    fn set_score(&mut self, line_removed_count: u8) {
+        let coeff = match line_removed_count {
+            1 => 40,
+            2 => 100,
+            3 => 300,
+            _ => 1200,
+        };
+        self.score += coeff * (self.level + 1);
     }
 
     pub fn new() -> TetrisGame {
@@ -50,6 +55,7 @@ impl TetrisGame {
 
         TetrisGame {
             score: 0,
+            level: 0,
             current_tetromino: None,
             playground: Playground::new(),
         }
@@ -69,6 +75,10 @@ impl TetrisGame {
 
     pub fn score(&self) -> u32 {
         self.score
+    }
+
+    pub fn level(&self) -> u32 {
+        self.level
     }
 
     pub fn go_right(&mut self) {
@@ -109,5 +119,114 @@ impl TetrisGame {
 impl Default for TetrisGame {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn set_score_level0_1line() {
+        // given
+        let mut game = TetrisGame::new();
+        game.level = 0;
+
+        // when
+        game.set_score(1);
+
+        // then
+        assert_eq!(game.score(), 40);
+    }
+
+    #[test]
+    fn set_score_level0_2lines() {
+        // given
+        let mut game = TetrisGame::new();
+        game.level = 0;
+
+        // when
+        game.set_score(2);
+
+        // then
+        assert_eq!(game.score(), 100);
+    }
+
+    #[test]
+    fn set_score_level0_3lines() {
+        // given
+        let mut game = TetrisGame::new();
+        game.level = 0;
+
+        // when
+        game.set_score(3);
+
+        // then
+        assert_eq!(game.score(), 300);
+    }
+
+    #[test]
+    fn set_score_level0_4lines() {
+        // given
+        let mut game = TetrisGame::new();
+        game.level = 0;
+
+        // when
+        game.set_score(4);
+
+        // then
+        assert_eq!(game.score(), 1200);
+    }
+
+    #[test]
+    fn set_score_level1_1line() {
+        // given
+        let mut game = TetrisGame::new();
+        game.level = 1;
+
+        // when
+        game.set_score(1);
+
+        // then
+        assert_eq!(game.score(), 80);
+    }
+
+    #[test]
+    fn set_score_level1_2lines() {
+        // given
+        let mut game = TetrisGame::new();
+        game.level = 1;
+
+        // when
+        game.set_score(2);
+
+        // then
+        assert_eq!(game.score(), 200);
+    }
+
+    #[test]
+    fn set_score_level1_3lines() {
+        // given
+        let mut game = TetrisGame::new();
+        game.level = 1;
+
+        // when
+        game.set_score(3);
+
+        // then
+        assert_eq!(game.score(), 600);
+    }
+
+    #[test]
+    fn set_score_level1_4lines() {
+        // given
+        let mut game = TetrisGame::new();
+        game.level = 1;
+
+        // when
+        game.set_score(4);
+
+        // then
+        assert_eq!(game.score(), 2400);
     }
 }

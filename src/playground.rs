@@ -3,19 +3,33 @@ use std::fmt;
 
 pub const COLUMN_COUNT: usize = 10;
 pub const ROW_COUNT: usize = 20;
+pub const SQUARE_COUNT: usize = COLUMN_COUNT * ROW_COUNT;
 
 #[derive(Clone)]
-pub struct Playground {
-    // TODO: replace with a array instead of Vec as the size is known
-    squares: Vec<Color>,
-}
+pub struct Playground(Vec<Color>);
 
 impl Playground {
     pub fn new() -> Playground {
         let squares = (0..COLUMN_COUNT * ROW_COUNT)
             .map(|_i| Color::None)
             .collect();
-        Playground { squares }
+        Playground(squares)
+    }
+
+    pub fn remove_full_lines_at_the_end(&mut self) -> u8 {
+        let mut full_square_count = 0;
+        for index in (0..SQUARE_COUNT).rev() {
+            if self.0[index] == Color::None {
+                break;
+            }
+            full_square_count += 1;
+        }
+        let line_removed_count = full_square_count / COLUMN_COUNT as u8;
+        (0..(COLUMN_COUNT * line_removed_count as usize)).for_each(|_| {
+            self.0.insert(0, Color::None);
+            self.0.remove(self.0.len() - 1);
+        });
+        line_removed_count
     }
 
     pub fn is_cell_bellow_free(&self, index: usize) -> bool {
@@ -24,7 +38,7 @@ impl Playground {
             return false;
         }
         let new_index = index + COLUMN_COUNT;
-        self.squares[new_index] == Color::None
+        self.0[new_index] == Color::None
     }
 
     pub fn is_cell_on_the_right_free(&self, index: usize) -> bool {
@@ -32,7 +46,7 @@ impl Playground {
             return false;
         }
         let new_index = index + 1;
-        self.squares[new_index] == Color::None
+        self.0[new_index] == Color::None
     }
 
     pub fn is_cell_on_the_left_free(&self, index: usize) -> bool {
@@ -40,28 +54,21 @@ impl Playground {
             return false;
         }
         let new_index = index - 1;
-        self.squares[new_index] == Color::None
-    }
-
-    pub fn is_last_line_full(&self) -> bool {
-        let start_index = COLUMN_COUNT * (ROW_COUNT - 1);
-        self.squares[start_index..]
-            .iter()
-            .all(|&x| x != Color::None)
+        self.0[new_index] == Color::None
     }
 
     pub fn get_squares(&self) -> &Vec<Color> {
-        &self.squares
+        &self.0
     }
 
     pub fn set_square(&mut self, index: usize, color: Color) {
-        self.squares[index] = color;
+        self.0[index] = color;
     }
 }
 
 impl fmt::Display for Playground {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        for line in self.squares.as_slice().chunks(COLUMN_COUNT) {
+        for line in self.0.as_slice().chunks(COLUMN_COUNT) {
             for &square in line {
                 let symbol = if square == Color::None { ' ' } else { '◼' };
                 write!(f, "{}", symbol)?;
@@ -83,43 +90,15 @@ impl Default for Playground {
 mod tests {
     use super::*;
 
-    #[test]
-    fn is_last_line_full_empty() {
-        // given
-        let playground = Playground::new();
-
-        // when
-        let is_last_line_full = playground.is_last_line_full();
-
-        // then
-        assert_eq!(is_last_line_full, false);
-    }
-
-    #[test]
-    fn is_last_line_full_some() {
-        // given
-        let mut playground = Playground::new();
-        playground.set_square(195, Color::Cyan);
-        playground.set_square(199, Color::Yellow);
-
-        // when
-        let is_last_line_full = playground.is_last_line_full();
-
-        // then
-        assert_eq!(is_last_line_full, false);
-    }
-
-    #[test]
-    fn is_last_line_full_all() {
-        // given
-        let mut playground = Playground::new();
-        (190..200).for_each(|i| playground.set_square(i, Color::Yellow));
-
-        // when
-        let is_last_line_full = playground.is_last_line_full();
-
-        // then
-        assert_eq!(is_last_line_full, true);
+    #[cfg(test)]
+    impl Playground {
+        #[cfg(test)]
+        pub fn is_empty(&self) -> bool {
+            self.0
+                .as_slice()
+                .iter()
+                .all(|square| *square == Color::None)
+        }
     }
 
     #[test]
@@ -231,5 +210,61 @@ mod tests {
 
         // then
         assert_eq!(is_cell_on_the_left_free, false);
+    }
+
+    #[test]
+    fn remove_full_lines_at_the_end_empty_playground() {
+        // given
+        let mut playground = Playground::new();
+
+        // when
+        let number_of_mine_removed = playground.remove_full_lines_at_the_end();
+
+        // then
+        assert_eq!(number_of_mine_removed, 0);
+        assert!(playground.is_empty());
+    }
+
+    #[test]
+    fn remove_full_lines_at_the_end_full_playground() {
+        // given
+        let squares = (0..COLUMN_COUNT * ROW_COUNT)
+            .map(|_i| Color::Cyan)
+            .collect();
+        let mut playground = Playground(squares);
+
+        // when
+        let number_of_mine_removed = playground.remove_full_lines_at_the_end();
+
+        // then
+        assert_eq!(number_of_mine_removed, 20);
+        assert!(playground.is_empty());
+    }
+
+    #[test]
+    fn remove_full_lines_at_the_end_with_two_and_half_line_full() {
+        // given
+        let squares = (0..COLUMN_COUNT * ROW_COUNT)
+            .map(|i| if i < 175 { Color::None } else { Color::Cyan })
+            .collect();
+        let mut playground = Playground(squares);
+
+        // when
+        let number_of_mine_removed = playground.remove_full_lines_at_the_end();
+
+        // then
+        assert_eq!(number_of_mine_removed, 2);
+        playground
+            .get_squares()
+            .as_slice()
+            .iter()
+            .enumerate()
+            .for_each(|(i, square)| {
+                if i < 195 {
+                    assert_eq!(*square, Color::None);
+                } else {
+                    assert_eq!(*square, Color::Cyan);
+                }
+            })
     }
 }
