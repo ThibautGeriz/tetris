@@ -45,7 +45,8 @@ impl TetrisGame {
             1 => 40,
             2 => 100,
             3 => 300,
-            _ => 1200,
+            4 => 1200,
+            _ => 0,
         };
         self.score += coeff * (self.level + 1);
     }
@@ -125,6 +126,19 @@ impl Default for TetrisGame {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn set_score_level0_0line() {
+        // given
+        let mut game = TetrisGame::new();
+        game.level = 0;
+
+        // when
+        game.set_score(0);
+
+        // then
+        assert_eq!(game.score(), 0);
+    }
 
     #[test]
     fn set_score_level0_1line() {
