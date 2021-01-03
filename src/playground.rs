@@ -5,17 +5,14 @@ pub const COLUMN_COUNT: usize = 10;
 pub const ROW_COUNT: usize = 20;
 
 #[derive(Clone)]
-pub struct Playground {
-    // TODO: replace with a array instead of Vec as the size is known
-    squares: Vec<Color>,
-}
+pub struct Playground(Vec<Color>);
 
 impl Playground {
     pub fn new() -> Playground {
         let squares = (0..COLUMN_COUNT * ROW_COUNT)
             .map(|_i| Color::None)
             .collect();
-        Playground { squares }
+        Playground(squares)
     }
 
     pub fn is_cell_bellow_free(&self, index: usize) -> bool {
@@ -24,7 +21,7 @@ impl Playground {
             return false;
         }
         let new_index = index + COLUMN_COUNT;
-        self.squares[new_index] == Color::None
+        self.0[new_index] == Color::None
     }
 
     pub fn is_cell_on_the_right_free(&self, index: usize) -> bool {
@@ -32,7 +29,7 @@ impl Playground {
             return false;
         }
         let new_index = index + 1;
-        self.squares[new_index] == Color::None
+        self.0[new_index] == Color::None
     }
 
     pub fn is_cell_on_the_left_free(&self, index: usize) -> bool {
@@ -40,28 +37,26 @@ impl Playground {
             return false;
         }
         let new_index = index - 1;
-        self.squares[new_index] == Color::None
+        self.0[new_index] == Color::None
     }
 
     pub fn is_last_line_full(&self) -> bool {
         let start_index = COLUMN_COUNT * (ROW_COUNT - 1);
-        self.squares[start_index..]
-            .iter()
-            .all(|&x| x != Color::None)
+        self.0[start_index..].iter().all(|&x| x != Color::None)
     }
 
     pub fn get_squares(&self) -> &Vec<Color> {
-        &self.squares
+        &self.0
     }
 
     pub fn set_square(&mut self, index: usize, color: Color) {
-        self.squares[index] = color;
+        self.0[index] = color;
     }
 }
 
 impl fmt::Display for Playground {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        for line in self.squares.as_slice().chunks(COLUMN_COUNT) {
+        for line in self.0.as_slice().chunks(COLUMN_COUNT) {
             for &square in line {
                 let symbol = if square == Color::None { ' ' } else { '◼' };
                 write!(f, "{}", symbol)?;
