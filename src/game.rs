@@ -26,7 +26,8 @@ impl TetrisGame {
         let mut next = self.playground.clone();
         match &mut self.current_tetromino {
             None => {
-                let tetromino: Box<dyn Tetromino> = get_random_tetromino(&mut next);
+                let tetromino: Box<dyn Tetromino> = get_random_tetromino();
+                tetromino.insert_into_playground(&mut next);
                 self.current_tetromino = Some(tetromino);
             }
             Some(tetromino) => {

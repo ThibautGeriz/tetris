@@ -12,21 +12,13 @@ pub struct T {
 }
 
 impl T {
-    pub fn new(playground: &mut Playground) -> Self {
-        let mut rng = Box::new(thread_rng()) as Box<dyn RngCore>;
-        T::create(&mut rng, playground)
-    }
-
-    fn create(rng: &mut Box<dyn RngCore>, playground: &mut Playground) -> Self {
+    fn create(rng: &mut Box<dyn RngCore>) -> Self {
         let index = rng.gen_range(2, COLUMN_COUNT - 2);
         let mut squares = [0; SQUARE_COUNT];
         squares[0] = index;
         squares[1] = index + 1;
         squares[2] = index + 2;
         squares[3] = index + COLUMN_COUNT + 1;
-        (0..SQUARE_COUNT).for_each(|i| {
-            playground.set_square(squares[i], COLOR);
-        });
         T { squares }
     }
 }
@@ -45,6 +37,15 @@ impl TetrominoCommon for T {
 }
 
 impl Tetromino for T {
+    fn new() -> Self {
+        let mut rng = Box::new(thread_rng()) as Box<dyn RngCore>;
+        T::create(&mut rng)
+    }
+
+    fn insert_into_playground(&self, playground: &mut Playground) -> bool {
+        <T as TetrominoCommon>::insert_into_playground(self, playground)
+    }
+
     fn go_down(&mut self, playground: &mut Playground) -> bool {
         <T as TetrominoCommon>::go_down(self, playground)
     }
@@ -64,7 +65,7 @@ impl Tetromino for T {
 
 impl Default for T {
     fn default() -> Self {
-        Self::new(&mut Playground::default())
+        Self::new()
     }
 }
 
@@ -100,9 +101,10 @@ mod tests {
         // given
         let mut fake_random = get_fake_rand(2);
         let mut playground = Playground::new();
+        let tetromino = T::create(&mut fake_random);
 
         // when
-        let tetromino = T::create(&mut fake_random, &mut playground);
+        <T as TetrominoCommon>::insert_into_playground(&tetromino, &mut playground);
 
         // then
         let mut expected_squares = [0; 4];
@@ -122,7 +124,8 @@ mod tests {
         // given
         let mut fake_random = get_fake_rand(2);
         let mut playground = Playground::new();
-        let mut tetromino = T::create(&mut fake_random, &mut playground);
+        let mut tetromino = T::create(&mut fake_random);
+        <T as TetrominoCommon>::insert_into_playground(&tetromino, &mut playground);
 
         // when
         let went_down = <T as Tetromino>::go_down(&mut tetromino, &mut playground);

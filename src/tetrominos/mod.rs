@@ -12,19 +12,23 @@ use rand::{thread_rng, Rng};
 
 const SQUARE_COUNT: usize = 4;
 
-pub fn get_random_tetromino(playground: &mut Playground) -> Box<dyn Tetromino> {
+pub fn get_random_tetromino() -> Box<dyn Tetromino> {
     match thread_rng().gen_range(0, 7) {
-        0 => Box::new(o::O::new(playground)),
-        1 => Box::new(i::I::new(playground)),
-        2 => Box::new(j::J::new(playground)),
-        3 => Box::new(l::L::new(playground)),
-        4 => Box::new(s::S::new(playground)),
-        5 => Box::new(t::T::new(playground)),
-        _ => Box::new(z::Z::new(playground)),
+        0 => Box::new(o::O::new()),
+        1 => Box::new(i::I::new()),
+        2 => Box::new(j::J::new()),
+        3 => Box::new(l::L::new()),
+        4 => Box::new(s::S::new()),
+        5 => Box::new(t::T::new()),
+        _ => Box::new(z::Z::new()),
     }
 }
 
 pub trait Tetromino {
+    fn new() -> Self
+    where
+        Self: Sized;
+    fn insert_into_playground(&self, playground: &mut Playground) -> bool;
     fn go_down(&mut self, playground: &mut Playground) -> bool;
     fn go_right(&mut self, playground: &mut Playground) -> bool;
     fn go_left(&mut self, playground: &mut Playground) -> bool;
@@ -45,6 +49,18 @@ trait TetrominoCommon {
             self.set_square(i, (self.get_square(i) as i16 + offset) as usize);
             playground.set_square(self.get_square(i), self.get_color());
         });
+    }
+
+    fn insert_into_playground(&self, playground: &mut Playground) -> bool {
+        let is_ok =
+            (0..SQUARE_COUNT).all(|i| playground.get_squares()[self.get_square(i)] == Color::None);
+        if !is_ok {
+            return false;
+        }
+        (0..SQUARE_COUNT).for_each(|i| {
+            playground.set_square(self.get_square(i), self.get_color());
+        });
+        true
     }
 
     fn can_go_down(&self, playground: &Playground) -> bool {
