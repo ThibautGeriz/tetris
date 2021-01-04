@@ -106,6 +106,10 @@ const renderLoop = () => {
   fps.render();
   draw();
   setScore();
+  if (game.is_game_over()) {
+    alert('game over !');
+    return;
+  }
   requestAnimationFrame(renderLoop);
 };
 renderLoop();

@@ -15,6 +15,7 @@ static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 pub struct TetrisGame {
     score: u32,
     level: u32,
+    is_game_over: bool,
     current_tetromino: Option<Box<dyn Tetromino>>,
     playground: Playground,
 }
@@ -23,11 +24,14 @@ pub struct TetrisGame {
 #[wasm_bindgen]
 impl TetrisGame {
     pub fn tick(&mut self) {
+        if self.is_game_over {
+            return;
+        }
         let mut next = self.playground.clone();
         match &mut self.current_tetromino {
             None => {
                 let tetromino: Box<dyn Tetromino> = get_random_tetromino();
-                tetromino.insert_into_playground(&mut next);
+                self.is_game_over = !tetromino.insert_into_playground(&mut next);
                 self.current_tetromino = Some(tetromino);
             }
             Some(tetromino) => {
@@ -58,6 +62,7 @@ impl TetrisGame {
         TetrisGame {
             score: 0,
             level: 0,
+            is_game_over: false,
             current_tetromino: None,
             playground: Playground::new(),
         }
@@ -77,6 +82,10 @@ impl TetrisGame {
 
     pub fn score(&self) -> u32 {
         self.score
+    }
+
+    pub fn is_game_over(&self) -> bool {
+        self.is_game_over
     }
 
     pub fn level(&self) -> u32 {
