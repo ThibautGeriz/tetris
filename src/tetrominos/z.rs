@@ -12,21 +12,13 @@ pub struct Z {
 }
 
 impl Z {
-    pub fn new(playground: &mut Playground) -> Self {
-        let mut rng = Box::new(thread_rng()) as Box<dyn RngCore>;
-        Z::create(&mut rng, playground)
-    }
-
-    fn create(rng: &mut Box<dyn RngCore>, playground: &mut Playground) -> Self {
+    fn create(rng: &mut Box<dyn RngCore>) -> Self {
         let index = rng.gen_range(2, COLUMN_COUNT - 2);
         let mut squares = [0; SQUARE_COUNT];
         squares[0] = index;
         squares[1] = index + 1;
         squares[2] = index + COLUMN_COUNT + 1;
         squares[3] = index + COLUMN_COUNT + 2;
-        (0..SQUARE_COUNT).for_each(|i| {
-            playground.set_square(squares[i], COLOR);
-        });
         Z { squares }
     }
 }
@@ -45,6 +37,15 @@ impl TetrominoCommon for Z {
 }
 
 impl Tetromino for Z {
+    fn new() -> Self {
+        let mut rng = Box::new(thread_rng()) as Box<dyn RngCore>;
+        Z::create(&mut rng)
+    }
+
+    fn insert_into_playground(&self, playground: &mut Playground) -> bool {
+        <Z as TetrominoCommon>::insert_into_playground(self, playground)
+    }
+
     fn go_down(&mut self, playground: &mut Playground) -> bool {
         <Z as TetrominoCommon>::go_down(self, playground)
     }
@@ -64,7 +65,7 @@ impl Tetromino for Z {
 
 impl Default for Z {
     fn default() -> Self {
-        Self::new(&mut Playground::default())
+        Self::new()
     }
 }
 
@@ -96,15 +97,18 @@ mod tests {
     }
 
     #[test]
-    fn new() {
+    fn insert_into_playground_true() {
         // given
         let mut fake_random = get_fake_rand(2);
         let mut playground = Playground::new();
+        let tetromino = Z::create(&mut fake_random);
 
         // when
-        let tetromino = Z::create(&mut fake_random, &mut playground);
+        let is_inserted =
+            <Z as TetrominoCommon>::insert_into_playground(&tetromino, &mut playground);
 
         // then
+        assert_eq!(is_inserted, true);
         let mut expected_squares = [0; 4];
         expected_squares[0] = 2;
         expected_squares[1] = 3;
@@ -122,7 +126,8 @@ mod tests {
         // given
         let mut fake_random = get_fake_rand(2);
         let mut playground = Playground::new();
-        let mut tetromino = Z::create(&mut fake_random, &mut playground);
+        let mut tetromino = Z::create(&mut fake_random);
+        <Z as TetrominoCommon>::insert_into_playground(&tetromino, &mut playground);
 
         // when
         let went_down = <Z as Tetromino>::go_down(&mut tetromino, &mut playground);

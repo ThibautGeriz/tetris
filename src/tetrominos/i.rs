@@ -12,18 +12,12 @@ pub struct I {
 }
 
 impl I {
-    pub fn new(playground: &mut Playground) -> Self {
-        let mut rng = Box::new(thread_rng()) as Box<dyn RngCore>;
-        I::create(&mut rng, playground)
-    }
-
-    fn create(rng: &mut Box<dyn RngCore>, playground: &mut Playground) -> Self {
+    fn create(rng: &mut Box<dyn RngCore>) -> Self {
         let index = rng.gen_range(2, COLUMN_COUNT - 2);
         let mut squares = [0; SQUARE_COUNT];
         (0..SQUARE_COUNT).for_each(|i| {
             let playground_index = index + i * COLUMN_COUNT;
             squares[i] = playground_index;
-            playground.set_square(playground_index, COLOR);
         });
         I { squares }
     }
@@ -43,6 +37,15 @@ impl TetrominoCommon for I {
 }
 
 impl Tetromino for I {
+    fn new() -> Self {
+        let mut rng = Box::new(thread_rng()) as Box<dyn RngCore>;
+        I::create(&mut rng)
+    }
+
+    fn insert_into_playground(&self, playground: &mut Playground) -> bool {
+        <I as TetrominoCommon>::insert_into_playground(self, playground)
+    }
+
     fn go_down(&mut self, playground: &mut Playground) -> bool {
         <I as TetrominoCommon>::go_down(self, playground)
     }
@@ -62,7 +65,7 @@ impl Tetromino for I {
 
 impl Default for I {
     fn default() -> Self {
-        Self::new(&mut Playground::default())
+        Self::new()
     }
 }
 
@@ -98,9 +101,10 @@ mod tests {
         // given
         let mut fake_random = get_fake_rand(2);
         let mut playground = Playground::new();
+        let tetromino = I::create(&mut fake_random);
 
         // when
-        let tetromino = I::create(&mut fake_random, &mut playground);
+        <I as TetrominoCommon>::insert_into_playground(&tetromino, &mut playground);
 
         // then
         let mut expected_squares = [0; 4];
@@ -120,7 +124,8 @@ mod tests {
         // given
         let mut fake_random = get_fake_rand(2);
         let mut playground = Playground::new();
-        let mut tetromino = I::create(&mut fake_random, &mut playground);
+        let mut tetromino = I::create(&mut fake_random);
+        <I as TetrominoCommon>::insert_into_playground(&tetromino, &mut playground);
 
         // when
         let went_down = <I as Tetromino>::go_down(&mut tetromino, &mut playground);

@@ -12,21 +12,13 @@ pub struct O {
 }
 
 impl O {
-    pub fn new(playground: &mut Playground) -> Self {
-        let mut rng = Box::new(thread_rng()) as Box<dyn RngCore>;
-        O::create(&mut rng, playground)
-    }
-
-    fn create(rng: &mut Box<dyn RngCore>, playground: &mut Playground) -> Self {
+    fn create(rng: &mut Box<dyn RngCore>) -> Self {
         let index = rng.gen_range(2, COLUMN_COUNT - 2);
         let mut squares = [0; SQUARE_COUNT];
         squares[0] = index;
         squares[1] = index + 1;
         squares[2] = index + COLUMN_COUNT;
         squares[3] = index + 1 + COLUMN_COUNT;
-        (0..SQUARE_COUNT).for_each(|i| {
-            playground.set_square(squares[i], COLOR);
-        });
         O { squares }
     }
 }
@@ -45,6 +37,15 @@ impl TetrominoCommon for O {
 }
 
 impl Tetromino for O {
+    fn new() -> Self {
+        let mut rng = Box::new(thread_rng()) as Box<dyn RngCore>;
+        O::create(&mut rng)
+    }
+
+    fn insert_into_playground(&self, playground: &mut Playground) -> bool {
+        <O as TetrominoCommon>::insert_into_playground(self, playground)
+    }
+
     fn go_down(&mut self, playground: &mut Playground) -> bool {
         <O as TetrominoCommon>::go_down(self, playground)
     }
@@ -64,7 +65,7 @@ impl Tetromino for O {
 
 impl Default for O {
     fn default() -> Self {
-        Self::new(&mut Playground::default())
+        Self::new()
     }
 }
 
@@ -100,9 +101,10 @@ mod tests {
         // given
         let mut fake_random = get_fake_rand(2);
         let mut playground = Playground::new();
+        let tetromino = O::create(&mut fake_random);
 
         // when
-        let tetromino = O::create(&mut fake_random, &mut playground);
+        <O as TetrominoCommon>::insert_into_playground(&tetromino, &mut playground);
 
         // then
         let mut expected_squares = [0; 4];
@@ -122,7 +124,8 @@ mod tests {
         // given
         let mut fake_random = get_fake_rand(2);
         let mut playground = Playground::new();
-        let mut tetromino = O::create(&mut fake_random, &mut playground);
+        let mut tetromino = O::create(&mut fake_random);
+        <O as TetrominoCommon>::insert_into_playground(&tetromino, &mut playground);
 
         // when
         let went_down = <O as Tetromino>::go_down(&mut tetromino, &mut playground);
@@ -148,7 +151,8 @@ mod tests {
         // given
         let mut fake_random = get_fake_rand(2);
         let mut playground = Playground::new();
-        let mut tetromino = O::create(&mut fake_random, &mut playground);
+        let mut tetromino = O::create(&mut fake_random);
+        <O as TetrominoCommon>::insert_into_playground(&tetromino, &mut playground);
 
         // when
         let mut went_down = <O as Tetromino>::go_down(&mut tetromino, &mut playground);
@@ -179,7 +183,8 @@ mod tests {
         let mut fake_random = get_fake_rand(2);
         let mut playground = Playground::new();
         playground.set_square(22, Color::Cyan);
-        let mut tetromino = O::create(&mut fake_random, &mut playground);
+        let mut tetromino = O::create(&mut fake_random);
+        <O as TetrominoCommon>::insert_into_playground(&tetromino, &mut playground);
 
         // when
         let went_down = <O as Tetromino>::go_down(&mut tetromino, &mut playground);
@@ -205,7 +210,8 @@ mod tests {
         // given
         let mut fake_random = get_fake_rand(2);
         let mut playground = Playground::new();
-        let mut tetromino = O::create(&mut fake_random, &mut playground);
+        let mut tetromino = O::create(&mut fake_random);
+        <O as TetrominoCommon>::insert_into_playground(&tetromino, &mut playground);
 
         // when
         let went_left = <O as Tetromino>::go_left(&mut tetromino, &mut playground);
@@ -231,7 +237,8 @@ mod tests {
         // given
         let mut fake_random = get_fake_rand(2);
         let mut playground = Playground::new();
-        let mut tetromino = O::create(&mut fake_random, &mut playground);
+        let mut tetromino = O::create(&mut fake_random);
+        <O as TetrominoCommon>::insert_into_playground(&tetromino, &mut playground);
 
         // when
         let mut went_left = <O as Tetromino>::go_left(&mut tetromino, &mut playground);
@@ -262,7 +269,8 @@ mod tests {
         let mut fake_random = get_fake_rand(2);
         let mut playground = Playground::new();
         playground.set_square(1, Color::Cyan);
-        let mut tetromino = O::create(&mut fake_random, &mut playground);
+        let mut tetromino = O::create(&mut fake_random);
+        <O as TetrominoCommon>::insert_into_playground(&tetromino, &mut playground);
 
         // when
         let went_left = <O as Tetromino>::go_left(&mut tetromino, &mut playground);
@@ -288,7 +296,8 @@ mod tests {
         // given
         let mut fake_random = get_fake_rand(2);
         let mut playground = Playground::new();
-        let mut tetromino = O::create(&mut fake_random, &mut playground);
+        let mut tetromino = O::create(&mut fake_random);
+        <O as TetrominoCommon>::insert_into_playground(&tetromino, &mut playground);
 
         // when
         let went_right = <O as Tetromino>::go_right(&mut tetromino, &mut playground);
@@ -314,7 +323,8 @@ mod tests {
         // given
         let mut fake_random = get_fake_rand(2);
         let mut playground = Playground::new();
-        let mut tetromino = O::create(&mut fake_random, &mut playground);
+        let mut tetromino = O::create(&mut fake_random);
+        <O as TetrominoCommon>::insert_into_playground(&tetromino, &mut playground);
 
         // when
         let mut went_right = <O as Tetromino>::go_right(&mut tetromino, &mut playground);
@@ -345,7 +355,8 @@ mod tests {
         let mut fake_random = get_fake_rand(2);
         let mut playground = Playground::new();
         playground.set_square(4, Color::Cyan);
-        let mut tetromino = O::create(&mut fake_random, &mut playground);
+        let mut tetromino = O::create(&mut fake_random);
+        <O as TetrominoCommon>::insert_into_playground(&tetromino, &mut playground);
 
         // when
         let went_right = <O as Tetromino>::go_right(&mut tetromino, &mut playground);
@@ -371,7 +382,8 @@ mod tests {
         // given
         let mut fake_random = get_fake_rand(2);
         let mut playground = Playground::new();
-        let mut tetromino = O::create(&mut fake_random, &mut playground);
+        let mut tetromino = O::create(&mut fake_random);
+        <O as TetrominoCommon>::insert_into_playground(&tetromino, &mut playground);
 
         // when
         let went_down = <O as Tetromino>::go_bottom(&mut tetromino, &mut playground);
@@ -400,7 +412,8 @@ mod tests {
         let mut fake_random = get_fake_rand(2);
         let mut playground = Playground::new();
         playground.set_square(42, Color::Cyan);
-        let mut tetromino = O::create(&mut fake_random, &mut playground);
+        let mut tetromino = O::create(&mut fake_random);
+        <O as TetrominoCommon>::insert_into_playground(&tetromino, &mut playground);
 
         // when
         let went_down = <O as Tetromino>::go_bottom(&mut tetromino, &mut playground);
