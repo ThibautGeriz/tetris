@@ -8,20 +8,22 @@ mod z;
 use crate::color::Color;
 use crate::playground::Playground;
 use crate::playground::{COLUMN_COUNT, ROW_COUNT};
-use rand::{thread_rng, Rng};
+use rand::{prelude::SliceRandom, thread_rng};
 
 const SQUARE_COUNT: usize = 4;
 
-pub fn get_random_tetromino() -> Box<dyn Tetromino> {
-    match thread_rng().gen_range(0, 7) {
-        0 => Box::new(o::O::new()),
-        1 => Box::new(i::I::new()),
-        2 => Box::new(j::J::new()),
-        3 => Box::new(l::L::new()),
-        4 => Box::new(s::S::new()),
-        5 => Box::new(t::T::new()),
-        _ => Box::new(z::Z::new()),
-    }
+pub fn get_suffled_tetrominos() -> Vec<Box<dyn Tetromino>> {
+    let mut tetrominos: Vec<Box<dyn Tetromino>> = vec![
+        Box::new(i::I::new()),
+        Box::new(j::J::new()),
+        Box::new(l::L::new()),
+        Box::new(o::O::new()),
+        Box::new(s::S::new()),
+        Box::new(t::T::new()),
+        Box::new(z::Z::new()),
+    ];
+    tetrominos.shuffle(&mut thread_rng());
+    tetrominos
 }
 
 pub trait Tetromino {
