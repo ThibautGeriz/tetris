@@ -9,4 +9,15 @@ module.exports = {
   },
   mode: 'development',
   plugins: [new CopyWebpackPlugin({ patterns: ['index.html'] })],
+  module: {
+    rules: [
+      {
+        test: /\.mp3$/,
+        loader: 'file-loader',
+        options: {
+          name: '[name].[ext]',
+        },
+      },
+    ],
+  },
 };

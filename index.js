@@ -128,8 +128,41 @@ document.addEventListener('keydown', ({ key }) => {
   if (key === 'ArrowDown' || key == 's') {
     game.go_bottom();
   }
+  if (key == 'm') {
+    toggleAudio();
+  }
 });
 
 function getIndex(row, column) {
   return row * columnCount + column;
 }
+
+const url = 'https://ia600504.us.archive.org/33/items/TetrisThemeMusic/Tetris.mp3';
+const audio = new Audio(url);
+let isPlaying = false;
+
+function toggleAudio() {
+  if (isPlaying) {
+    pause();
+  } else {
+    play();
+  }
+}
+
+function play() {
+  audio.addEventListener('ended', function () {
+    if (isPlaying) {
+      audio.play();
+    }
+  });
+  audio.play().then(() => {
+    isPlaying = true;
+  });
+}
+
+function pause() {
+  isPlaying = false;
+  audio.pause();
+}
+
+play();
