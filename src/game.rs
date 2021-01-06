@@ -41,11 +41,12 @@ impl TetrisGame {
             Some(tetromino) => {
                 if !tetromino.go_down(&mut next) {
                     self.current_tetromino = None;
+                    let line_removed_count = next.remove_full_lines();
+                    self.set_score(line_removed_count);
                 }
             }
         }
-        let line_removed_count = next.remove_full_lines_at_the_end();
-        self.set_score(line_removed_count);
+
         self.playground = next;
     }
 

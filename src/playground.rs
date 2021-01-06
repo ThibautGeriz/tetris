@@ -16,20 +16,29 @@ impl Playground {
         Playground(squares)
     }
 
-    pub fn remove_full_lines_at_the_end(&mut self) -> u8 {
-        let mut full_square_count = 0;
-        for index in (0..SQUARE_COUNT).rev() {
-            if self.0[index] == Color::None {
-                break;
+    pub fn remove_full_lines(&mut self) -> u8 {
+        let mut row_removed_count: u8 = 0;
+        for row in (0..ROW_COUNT).rev() {
+            let mut is_line_full = true;
+            for column in 0..COLUMN_COUNT {
+                let index = COLUMN_COUNT * row + column;
+                is_line_full = is_line_full && self.0[index] != Color::None;
             }
-            full_square_count += 1;
+            if !is_line_full && row_removed_count > 0 {
+                for column in 0..COLUMN_COUNT {
+                    let index = COLUMN_COUNT * row + column;
+                    self.0[index + COLUMN_COUNT * row_removed_count as usize] = self.0[index];
+                }
+            }
+            if is_line_full {
+                row_removed_count += 1;
+            }
         }
-        let line_removed_count = full_square_count / COLUMN_COUNT as u8;
-        (0..(COLUMN_COUNT * line_removed_count as usize)).for_each(|_| {
-            self.0.insert(0, Color::None);
-            self.0.remove(self.0.len() - 1);
-        });
-        line_removed_count
+
+        for index in 0..(row_removed_count as usize * COLUMN_COUNT) {
+            self.0[index] = Color::None;
+        }
+        row_removed_count
     }
 
     pub fn is_cell_bellow_free(&self, index: usize) -> bool {
@@ -213,12 +222,12 @@ mod tests {
     }
 
     #[test]
-    fn remove_full_lines_at_the_end_empty_playground() {
+    fn remove_full_lines_empty_playground() {
         // given
         let mut playground = Playground::new();
 
         // when
-        let number_of_mine_removed = playground.remove_full_lines_at_the_end();
+        let number_of_mine_removed = playground.remove_full_lines();
 
         // then
         assert_eq!(number_of_mine_removed, 0);
@@ -226,7 +235,7 @@ mod tests {
     }
 
     #[test]
-    fn remove_full_lines_at_the_end_full_playground() {
+    fn remove_full_lines_full_playground() {
         // given
         let squares = (0..COLUMN_COUNT * ROW_COUNT)
             .map(|_i| Color::Cyan)
@@ -234,7 +243,7 @@ mod tests {
         let mut playground = Playground(squares);
 
         // when
-        let number_of_mine_removed = playground.remove_full_lines_at_the_end();
+        let number_of_mine_removed = playground.remove_full_lines();
 
         // then
         assert_eq!(number_of_mine_removed, 20);
@@ -242,7 +251,7 @@ mod tests {
     }
 
     #[test]
-    fn remove_full_lines_at_the_end_with_two_and_half_line_full() {
+    fn remove_full_lines_with_two_and_half_line_full_at_the_end() {
         // given
         let squares = (0..COLUMN_COUNT * ROW_COUNT)
             .map(|i| if i < 175 { Color::None } else { Color::Cyan })
@@ -250,7 +259,7 @@ mod tests {
         let mut playground = Playground(squares);
 
         // when
-        let number_of_mine_removed = playground.remove_full_lines_at_the_end();
+        let number_of_mine_removed = playground.remove_full_lines();
 
         // then
         assert_eq!(number_of_mine_removed, 2);
@@ -261,6 +270,40 @@ mod tests {
             .enumerate()
             .for_each(|(i, square)| {
                 if i < 195 {
+                    assert_eq!(*square, Color::None);
+                } else {
+                    assert_eq!(*square, Color::Cyan);
+                }
+            })
+    }
+
+    #[test]
+    fn remove_full_lines_with_two_and_half_line_full() {
+        // given
+        let squares = (0..COLUMN_COUNT * ROW_COUNT)
+            .map(|i| {
+                if i < 165 || i > 195 {
+                    Color::None
+                } else {
+                    Color::Cyan
+                }
+            })
+            .collect();
+        let mut playground = Playground(squares);
+
+        // when
+        let number_of_mine_removed = playground.remove_full_lines();
+
+        // then
+        assert_eq!(number_of_mine_removed, 2);
+
+        playground
+            .get_squares()
+            .as_slice()
+            .iter()
+            .enumerate()
+            .for_each(|(i, square)| {
+                if i < 185 || i > 195 {
                     assert_eq!(*square, Color::None);
                 } else {
                     assert_eq!(*square, Color::Cyan);
