@@ -131,6 +131,12 @@ document.addEventListener('keydown', ({ key }) => {
   if (key == 'm') {
     toggleAudio();
   }
+  if (key === 'g') {
+    game.rotate_clockwise();
+  }
+  if (key === 'h') {
+    game.rotate_anticlockwise();
+  }
 });
 
 function getIndex(row, column) {

@@ -35,6 +35,8 @@ pub trait Tetromino {
     fn go_right(&mut self, playground: &mut Playground) -> bool;
     fn go_left(&mut self, playground: &mut Playground) -> bool;
     fn go_bottom(&mut self, playground: &mut Playground) -> bool;
+    fn rotate_clockwise(&mut self, playground: &mut Playground) -> bool;
+    fn rotate_anticlockwise(&mut self, playground: &mut Playground) -> bool;
 }
 
 trait TetrominoCommon {

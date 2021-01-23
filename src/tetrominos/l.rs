@@ -60,6 +60,14 @@ impl Tetromino for L {
     fn go_bottom(&mut self, playground: &mut Playground) -> bool {
         <L as TetrominoCommon>::go_bottom(self, playground)
     }
+
+    fn rotate_clockwise(&mut self, playground: &mut Playground) -> bool {
+        true
+    }
+
+    fn rotate_anticlockwise(&mut self, playground: &mut Playground) -> bool {
+        true
+    }
 }
 
 impl Default for L {

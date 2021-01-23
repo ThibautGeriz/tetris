@@ -121,6 +121,22 @@ impl TetrisGame {
             self.playground = next;
         }
     }
+
+    pub fn rotate_clockwise(&mut self) {
+        if let Some(tetromino) = &mut self.current_tetromino {
+            let mut next = self.playground.clone();
+            tetromino.rotate_clockwise(&mut next);
+            self.playground = next;
+        }
+    }
+
+    pub fn rotate_anticlockwise(&mut self) {
+        if let Some(tetromino) = &mut self.current_tetromino {
+            let mut next = self.playground.clone();
+            tetromino.rotate_anticlockwise(&mut next);
+            self.playground = next;
+        }
+    }
 }
 
 impl TetrisGame {
